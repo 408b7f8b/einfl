@@ -1,6 +1,36 @@
 /*
- * Schluesselliste
+ * Einfacher Listendatentyp mit Funktionen
  * Version 0.1
+ *
+ * Copyright (c) 2018 D. Breunig, FhG IPA
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+ * Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * ---------------------------------------------------------------------------------------------------------------------
+ *
+ * Hiermit wird unentgeltlich jeder Person, die eine Kopie der Software und der zugehörigen Dokumentationen (die
+ * "Software") erhält, die Erlaubnis erteilt, sie uneingeschränkt zu nutzen, inklusive und ohne Ausnahme mit dem Recht,
+ * sie zu verwenden, zu kopieren, zu verändern, zusammenzufügen, zu veröffentlichen, zu verbreiten, zu unterlizenzieren
+ * und/oder zu verkaufen, und Personen, denen diese Software überlassen wird, diese Rechte zu verschaffen, unter den
+ * folgenden Bedingungen:
+ * Der obige Urheberrechtsvermerk und dieser Erlaubnisvermerk sind in allen Kopien oder Teilkopien der Software
+ * beizulegen.
+ *
+ * DIE SOFTWARE WIRD OHNE JEDE AUSDRÜCKLICHE ODER IMPLIZIERTE GARANTIE BEREITGESTELLT, EINSCHLIEẞLICH DER GARANTIE ZUR
+ * BENUTZUNG FÜR DEN VORGESEHENEN ODER EINEM BESTIMMTEN ZWECK SOWIE JEGLICHER RECHTSVERLETZUNG, JEDOCH NICHT DARAUF
+ * BESCHRÄNKT. IN KEINEM FALL SIND DIE AUTOREN ODER COPYRIGHTINHABER FÜR JEGLICHEN SCHADEN ODER SONSTIGE ANSPRÜCHE
+ * HAFTBAR ZU MACHEN, OB INFOLGE DER ERFÜLLUNG EINES VERTRAGES, EINES DELIKTES ODER ANDERS IM ZUSAMMENHANG MIT DER
+ * SOFTWARE ODER SONSTIGER VERWENDUNG DER SOFTWARE ENTSTANDEN.
  */
 
 #ifndef EINFL_H
@@ -13,23 +43,24 @@ extern "C" {
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <memory.h>
 
 /*
  * Typen
  */
-typedef enum einfl_rueckgabe {
-	IO, LISTE_NULL, ALLOK_FEHLG, KEIN_EINTRAG, KEINE_EINTRAEGE
-} einfl_rueckgabe;
+typedef enum list_return_value {
+	OK, LIST_NULL, ALLOC_FAILED, NO_ENTRY, NO_ENTRIES
+} list_return_value;
 
-typedef struct einfl_eintrag {
-	void* wert;
-	struct einfl_eintrag* n_eintrag;
-} einfl_eintrag;
+typedef struct list_entry {
+	void* value;
+	struct list_entry* next_entry;
+} list_entry;
 
-typedef struct einfl_liste {
-	struct einfl_eintrag* starteintrag;
-	unsigned int eintraege_l;
-} einfl_liste;
+typedef struct list_list {
+	struct list_entry* first_entry;
+	unsigned int number_entries;
+} list_list;
 
 /*
  * Deklarationen
@@ -39,14 +70,14 @@ typedef struct einfl_liste {
  * Konstruieren mit direkter Rückgabe, alloziert eine einfl_liste
  * Muss aufgelöst werden
  */
-einfl_liste* einfl_ListeErstellenZeiger();
+list_list* list_makeListPointer();
 
 /*
  * Konstruieren mit Rückgabe über extern gegebenen Zeiger, alloziert eine einfl_liste
  * Muss aufgelöst werden
  * einfl_liste** liste: Zeiger auf einfl_liste-Zeiger
  */
-einfl_rueckgabe einfl_ListeErstellen(einfl_liste** liste);
+list_return_value list_makeList(list_list** liste);
 
 /*
  * Auflösen einer einfl_liste
@@ -54,19 +85,17 @@ einfl_rueckgabe einfl_ListeErstellen(einfl_liste** liste);
  * const int free_name: wenn 1, Schlüssel der Einträge deallozieren
  * const int free_wert: wenn 1, Werte der Einträge deallozieren
  */
-einfl_rueckgabe einfl_ListeAufloesen(const einfl_liste* liste, const int free_wert);
+list_return_value list_deleteList(list_list* liste, const int free_wert);
 
 /*
  * Eintrag zu einer einfl_liste hinzufügen
  * einfl_liste* liste: Zeiger auf einfl_liste, zu der der Eintrag hinzugefügt werden soll
  * const void* wert: Wert für den Eintrag
  * const int wert_kopieren: Wert kopieren?
- * const unsigned int wert_laenge: Falls der Wert kopiert werden soll, ist hier die Länge des zu allozierenden Speicherplatzes einzutragen
+ * const unsigned int wert_laenge: Falls der Wert kopiert werden soll, ist hier die Länge des zu allozierenden
+ * Speicherplatzes einzutragen
  */
-einfl_rueckgabe einfl_ListeEintragHinzufuegen(einfl_liste* liste, const void* wert, const int wert_kopieren,
-											  const unsigned int wert_laenge);
-einfl_rueckgabe einfl_ListeAddBack(einfl_liste* liste, const void* wert, const int wert_kopieren,
-											  const unsigned int wert_laenge);
+list_return_value list_add(list_list* liste, const void* value, const int copy_value, const unsigned int value_size);
 
 /*
  * Eintrag aus einer einfl_liste entfernen
@@ -74,8 +103,7 @@ einfl_rueckgabe einfl_ListeAddBack(einfl_liste* liste, const void* wert, const i
  * const char* index: Index des Eintrags
  * const int free_wert: wenn 1, Wert des Eintrags deallozieren
  */
-einfl_rueckgabe einfl_ListeEintragEntfernen(einfl_liste* liste, const unsigned int index, const int free_wert);
-einfl_rueckgabe einfl_ListePopBack(einfl_liste* liste, const int free_wert);
+list_return_value liste_pop(list_list* liste, const unsigned int index, const int free_wert);
 
 /*
  * Zeiger auf Wert holen
@@ -83,201 +111,215 @@ einfl_rueckgabe einfl_ListePopBack(einfl_liste* liste, const int free_wert);
  * void** v: Zeiger auf den Zeiger, der den Wert angeben soll
  * const char* index: Index des Eintrags
  */
-einfl_rueckgabe einfl_ListeWertHolen(const einfl_liste* liste, void** v, const unsigned int index);
-einfl_rueckgabe einfl_ListeWertFirst(const einfl_liste* liste, void** v);
-einfl_rueckgabe einfl_ListeWertLast(const einfl_liste* liste, void** v);
+list_return_value list_getValue(const list_list* liste, void** v, const unsigned int index);
+
+list_return_value list_getValueFirst(const list_list* liste, void** v);
+
+list_return_value list_getValueLast(const list_list* liste, void** v);
 
 /*
  * Zeiger auf Wert direkt ausgeben
  * const einfl_liste* liste: Zeiger auf einfl_liste, aus der der Wert geholt werden soll
  * const char* index: Index des Eintrags
  */
-void* einfl_ListeWertHolenZeiger(const einfl_liste* liste, const unsigned int index);
-void* einfl_ListeWertHolenZeigerFirst(const einfl_liste* liste);
-void* einfl_ListeWertHolenZeigerLast(const einfl_liste* liste);
+void* list_getValuePointer(const list_list* liste, const unsigned int index);
+
+void* list_getValueFirstPointer(const list_list* liste);
+
+void* list_getValueLastPointer(const list_list* liste);
 
 /*
  * Definitionen
  */
 
-einfl_liste* einfl_ListeErstellenZeiger(){
+list_list* list_makeListPointer() {
 
-	einfl_liste* ret = (einfl_liste*)calloc(1, sizeof(einfl_liste));
+	list_list* ret;
+	ret = (list_list*) calloc(1, sizeof(list_list));
 	return ret;
 
 }
 
-einfl_rueckgabe einfl_ListeAufloesen(const einfl_liste* liste, const int free_name, const int free_wert){
+list_return_value list_deleteList(list_list* liste, const int free_wert) {
 
-	if(liste == NULL)
-		return LISTE_NULL;
+	if (liste == NULL)
+		return LIST_NULL;
 
-	einfl_eintrag* p = liste->starteintrag;
+	list_entry* p;
+	p = liste->first_entry;
 
-	while(p != NULL) {
-		einfl_eintrag* t= p->n_eintrag;
+	if (p == NULL)
+		return NO_ENTRIES;
 
-		if(free_wert){
-			free(p->wert);
+	while (p != NULL) {
+		list_entry* t;
+		t = p->next_entry;
+
+		if (free_wert) {
+			free(p->value);
 		}
 
+		free(p);
 		p = t;
 	}
 
-	return IO;
+	free(liste);
+
+	return OK;
 
 }
 
-einfl_rueckgabe einfl_ListeEintragHinzufuegen(einfl_liste* liste, const void* wert, const int wert_kopieren, const unsigned int wert_laenge){
+list_return_value list_add(list_list* liste, const void* value, const int copy_value, const unsigned int value_size) {
 
-	if(liste == NULL)
-		return LISTE_NULL;
+	if (liste == NULL)
+		return LIST_NULL;
 
-	einfl_eintrag neuer_eintrag;
-	neuer_eintrag.wert = (void*)wert;
-	neuer_eintrag.n_eintrag = NULL;
+	list_entry neuer_eintrag;
+	neuer_eintrag.value = (void*) value;
+	neuer_eintrag.next_entry = NULL;
 
-	einfl_eintrag* p = liste->starteintrag;
+	list_entry** p;
+	p = &liste->first_entry;
 
-	while(p != NULL) {
-		p = p->n_eintrag;
+	while (*p != NULL) {
+		p = &(*p)->next_entry;
 	}
 
-	p->n_eintrag = (einfl_eintrag*)calloc(1, sizeof(einfl_eintrag));
+	*p = (list_entry*) calloc(1, sizeof(list_entry));
 
-	if(p->n_eintrag == NULL){
-		return ALLOK_FEHLG;
+	if (*p == NULL) {
+		return ALLOC_FAILED;
 	}
 
-	if(wert_kopieren){
-		p->n_eintrag->wert = (char*)calloc(wert_laenge, 1);
+	if (copy_value) {
+		neuer_eintrag.value = (char*) calloc(value_size, 1);
 
-		if(p->n_eintrag->wert == NULL){
-			free(p->n_eintrag);
-			return ALLOK_FEHLG;
+		if (neuer_eintrag.value == NULL) {
+			return ALLOC_FAILED;
 		}
 
-		memcpy(p->n_eintrag->wert, wert, wert_laenge);
-	}else{
-		p->n_eintrag->wert = neuer_eintrag.wert;
+		memcpy(neuer_eintrag.value, value, value_size);
 	}
 
-	liste->eintraege_l++;
+	memcpy(*p, &neuer_eintrag, sizeof(list_entry));
 
-	return IO;
+	liste->number_entries++;
+
+	return OK;
+
 }
 
-einfl_rueckgabe einfl_ListeAddBack(einfl_liste* liste, const void* wert, const int wert_kopieren,
-								   const unsigned int wert_laenge){
-	return einfl_ListeEintragHinzufuegen(liste, wert, wert_kopieren, wert_laenge);
-}
+list_return_value liste_pop(list_list* liste, const unsigned int index, const int free_wert) {
 
-einfl_rueckgabe einfl_ListeEintragEntfernen(einfl_liste* liste, const unsigned int index, const int free_wert){
+	if (liste == NULL)
+		return LIST_NULL;
 
-	if(liste == NULL)
-		return MAP_NULL;
+	if (liste->first_entry == NULL)
+		return NO_ENTRIES;
 
-	if(liste->starteintrag == NULL)
-		return KEINE_EINTRAEGE;
-
-	einfl_eintrag* vorg = NULL;
-	einfl_eintrag* p = liste->starteintrag;
+	list_entry** vorg;
+	vorg = NULL;
+	list_entry** p;
+	p = &liste->first_entry;
 
 	unsigned int i;
 	i = 0;
 
-	while(i < index && p != NULL){
+	while (i < index && *p != NULL) {
 		++i;
 		vorg = p;
-		p = p->n_eintrag;
+		p = &(*p)->next_entry;
 	}
 
-	if(p == NULL){
-		return KEIN_EINTRAG;
-	}else{
-		if(vorg != NULL){
-			vorg->n_eintrag = p->n_eintrag;
+	if (*p == NULL) {
+		return NO_ENTRY;
+	} else {
+		if (*vorg != NULL) {
+			(*vorg)->next_entry = (*p)->next_entry;
 		}
-		if(free_wert == 1){
-			free(p->wert);
+		if (free_wert == 1) {
+			free((*p)->value);
 		}
-		free(p);
+		free(*p);
 	}
 
-	liste->eintraege_l--;
+	liste->number_entries--;
 
-	return IO;
-}
-
-einfl_rueckgabe einfl_ListePopBack(einfl_liste* liste, const int free_wert){
-
-	return einfl_ListeEintragEntfernen(liste, (liste->eintraege_l-1), free_wert);
+	return OK;
 
 }
 
-einfl_rueckgabe einfl_ListeWertHolen(const einfl_liste* liste, void** v, const unsigned int index){
+list_return_value list_popBack(list_list* liste, const int free_wert) {
 
-	einfl_eintrag* e;
+	return liste_pop(liste, (liste->number_entries - 1), free_wert);
+
+}
+
+list_return_value list_getValue(const list_list* liste, void** v, const unsigned int index) {
+
+	if (liste == NULL)
+		return LIST_NULL;
+
+	if (liste->number_entries <= index)
+		return NO_ENTRY;
+
+	list_entry* e;
 	e = NULL;
 
 	unsigned int i;
 	i = 0;
 
-	einfl_eintrag* p = liste->starteintrag;
+	list_entry* p;
+	p = liste->first_entry;
 
-	while(i < index && p != NULL){
+	while (i < index && p != NULL) {
 		++i;
-		vorg = p;
-		p = p->n_eintrag;
+		p = p->next_entry;
 	}
 
-	if(p != NULL){
-		*v = p->wert;
-		return IO;
+	if (p != NULL) {
+		*v = p->value;
+		return OK;
 	}
 
-	return KEIN_EINTRAG;
-}
-
-einfl_rueckgabe einfl_ListeWertFirst(const einfl_liste* liste, void** v){
-
-	return einfl_ListeWertHolen(liste, v, 0);
+	return NO_ENTRY;
 
 }
 
-einfl_rueckgabe einfl_ListeWertLast(const einfl_liste* liste, void** v){
+list_return_value list_getValueFirst(const list_list* liste, void** v) {
 
-	return einfl_ListeWertHolen(liste, v, (liste->eintraege_l-1));
+	return list_getValue(liste, v, 0);
 
 }
 
-void* einfl_ListeWertHolenZeiger(const einfl_liste* liste, const unsigned int index){
+list_return_value list_getValueLast(const list_list* liste, void** v) {
+
+	return list_getValue(liste, v, (liste->number_entries - 1));
+
+}
+
+void* list_getValuePointer(const list_list* liste, const unsigned int index) {
 
 	void* v;
 	v = NULL;
 
-	if(einfl_ListeWertHolen(liste, &v, index) == IO){
-		return v;
-	}else{
-		return NULL;
-	}
+	list_getValue(liste, &v, index);
 
 }
 
-void* einfl_ListeWertHolenZeigerFirst(const einfl_liste* liste){
+void* list_getValueFirstPointer(const list_list* liste) {
 
-	einfl_ListeWertHolenZeiger(liste, 0);
+	list_getValuePointer(liste, 0);
 
 }
 
-void* einfl_ListeWertHolenZeigerLast(const einfl_liste* liste){
+void* list_getValueLastPointer(const list_list* liste) {
 
-	einfl_ListeWertHolenZeiger(liste, (liste->eintraege_l-1));
+	list_getValuePointer(liste, (liste->number_entries - 1));
 
 }
 
 #ifdef __cplusplus
 }
 #endif
-
 #endif
