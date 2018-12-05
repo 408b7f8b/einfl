@@ -18,7 +18,7 @@ extern "C" {
  * Typen
  */
 typedef enum einfl_rueckgabe {
-	IO, LISTE_NULL, EINTRAG_NIO, ALLOK_FEHLG, NAME_FEHLT, KEIN_EINTRAG, KEINE_EINTRAEGE
+	IO, LISTE_NULL, ALLOK_FEHLG, KEIN_EINTRAG, KEINE_EINTRAEGE
 } einfl_rueckgabe;
 
 typedef struct einfl_eintrag {
