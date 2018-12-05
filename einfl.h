@@ -1,6 +1,6 @@
 /*
- * Einfacher Listendatentyp mit Funktionen
- * Version 0.1
+ * Einfacher Listendatentyp mit zugehörigen Funktionen
+ * Version 5.12.2018
  *
  * Copyright (c) 2018 D. Breunig, FhG IPA
  *
